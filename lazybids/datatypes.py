@@ -123,10 +123,10 @@ class Scan(BaseModel, extra=Extra.allow):
     # filetype: str = None
     files: List[Path] = []
     metadata_files: List[Path] = []
-    fields: Optional[dict | None] = {}
-    table: Optional[pd.DataFrame|None] = None
+    fields: Optional[Union[dict,  None]] = {}
+    table: Optional[Union[pd.DataFrame,  None]] = None
     _loaded: bool = False
-    _cached_image: Optional[sitk.Image | None] = None
+    _cached_image: Optional[Union[sitk.Image,  None]] = None
 
     def from_file(self, file: Path, parent=None):
         if parent:
@@ -212,9 +212,9 @@ class Scan(BaseModel, extra=Extra.allow):
 class Experiment(BaseModel, extra=Extra.allow):
     folder: Path
     parent: Any = Field(None, repr=False)
-    scans: Optional[dict | None] = {}
-    scan_metadata: Optional[dict | None] = {}
-    fields: Optional[dict | None] = None
+    scans: Optional[Union[dict,  None]] = {}
+    scan_metadata: Optional[Union[dict,  None]] = {}
+    fields: Optional[Union[dict,  None]] = None
     load_scans = load_scans
 
     def from_dict(exp_dict=None, dataset_folder="", parent=None):
@@ -283,13 +283,13 @@ class Experiment(BaseModel, extra=Extra.allow):
 
 
 class Subject(BaseModel, extra=Extra.allow):
-    participant_id: Optional[str | None]
+    participant_id: Optional[Union[str,  None]]
     parent: Any = Field(None, repr=False)
-    folder: Optional[Path | None] = None
+    folder: Optional[Union[Path,  None]] = None
     experiments: Optional[List[Experiment]] = Field([], repr=False)
-    scans: Optional[dict | None] = Field({}, repr=False)
-    scan_metadata: Optional[dict | None] = {}
-    fields: Optional[dict | None] = None
+    scans: Optional[Union[dict,  None]] = Field({}, repr=False)
+    scan_metadata: Optional[Union[dict,  None]] = {}
+    fields: Optional[Union[dict,  None]] = None
     load_scans = load_scans
 
     def from_dict(pt_dict=None, dataset_folder="", parent=None):
