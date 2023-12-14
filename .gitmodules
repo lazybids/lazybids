@@ -1,3 +1,3 @@
 [submodule "lazybids/resources/bids-specification"]
-	path = ./lazybids/resources/bids-specification
+	path = lazybids/resources/bids-specification
 	url = https://github.com/bids-standard/bids-specification.git
