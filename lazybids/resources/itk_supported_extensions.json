@@ -1,0 +1,6 @@
+[   ".bmp", ".gipl", ".gipl.gz", ".hdr", 
+    ".img", ".img.gz", ".jpeg", ".jpg", ".lsm", ".mha", 
+    ".mhd", ".mnc", ".mrc", ".nhdr", ".nia", ".nii", 
+    ".nii.gz", ".nrrd", ".pic", ".png", ".rec", ".tif", 
+    ".tiff", ".vtk"
+]

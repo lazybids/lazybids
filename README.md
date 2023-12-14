@@ -1,1 +1,1 @@
-# lazybids_real
+# LazyBIDS
