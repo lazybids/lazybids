@@ -34,12 +34,12 @@ def load_yaml_config(file_path: str):
 
 
 config_paths = [
-    resource_filename("lazybids", "./resources/bids-specification/src/schema/objects/modalities.yaml"),
-    resource_filename("lazybids", "./resources/bids-specification/src/schema/objects/suffixes.yaml"),
-    resource_filename("lazybids", "./resources/bids-specification/src/schema/objects/metadata.yaml"),
-    resource_filename("lazybids", "./resources/bids-specification/src/schema/objects/extensions.yaml"),
-    resource_filename("lazybids", "./resources/bids-specification/src/schema/objects/datatypes.yaml"),
-    resource_filename("lazybids", "./resources/bids-specification/src/schema/objects/columns.yaml"),
+    resource_filename("lazybids", "./resources/schema/objects/modalities.yaml"),
+    resource_filename("lazybids", "./resources/schema/objects/suffixes.yaml"),
+    resource_filename("lazybids", "./resources/schema/objects/metadata.yaml"),
+    resource_filename("lazybids", "./resources/schema/objects/extensions.yaml"),
+    resource_filename("lazybids", "./resources/schema/objects/datatypes.yaml"),
+    resource_filename("lazybids", "./resources/schema/objects/columns.yaml"),
 ]
 
 modalities, suffix, metadata, extensions, datatypes, columns = [
