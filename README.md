@@ -9,7 +9,7 @@ pip install git+https://github.com/roelant001/lazybids.git
 ```
 
 Example:
-[![Google Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roelant001/lazybids/blob/main/examples/bids_starter_kit_load.ipynb)
+[![Google Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roelant001/lazybids/blob/master/examples/bids_starter_kit_load.ipynb)
 
 
 ```python
