@@ -17,6 +17,14 @@ Example:
 
 Please note that subjects and experiments act as lists, whereas scans are dictionaries. This behaviour should probably be harmonized in a future release.
 
+## Notable features:
+- Access all metadata of a Dataset, Subject, Experiment or Scan using the all_metadata property. This combines variables from filenames, .json (sidecars) and nifti/dicom metadata.
+- Access contents of scan/measurment level .tsv files using pandas from the Scan.table parameter
+- All imaging formats supported by SimpleITK, including .nii, .nii.gz and DICOM-folders should work (*DICOM support not tested). As well as .tsv and .json sidecar/metadata formats.
+- You can control if scan's pixel/voxel data is cached in memory using the 'load_scans_in_memory' parameter on creation or using load_scans() function of a Dataset,Subject,or Experiments, or the Scan.load() and Scan.unload() functions.
+- Scan meta-data is always loaded
+- Access scan pixel/voxel data using SimpleITK images from the Scan.data property, or as numpy array using Scan.numpy
+
 ```python
 import lazybids
 dataset_dir = './templates/'
