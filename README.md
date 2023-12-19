@@ -1,16 +1,21 @@
 # LazyBIDS
 
-# This is a very early proof of concept, expect things to fail/break/not work!!!
+# This is a very early proof of concept, expect things to fail/break or change!!!
 Python package to (lazily) interact with BIDS datasets.
 
-Install:
+Install the latest version:
 ```bash
 pip install git+https://github.com/roelant001/lazybids.git
+```
+Or install a tagged release from [test pypi](https://test.pypi.org/project/lazybids/#files]):
+```bash
+pip install -i https://test.pypi.org/simple/ lazybids
 ```
 
 Example:
 [![Google Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roelant001/lazybids/blob/master/examples/bids_starter_kit_load.ipynb)
 
+Please note that subjects and experiments act as lists, whereas scans are dictionaries. This behaviour should probably be harmonized in a future release.
 
 ```python
 import lazybids
