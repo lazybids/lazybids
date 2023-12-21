@@ -19,7 +19,7 @@ pydicom = "^2.4.3"
 h5py = "^3.10.0"
 
 [tool.poetry.group.dev.dependencies]
-ipython = "^7.0.0"
+ipython = "^8.10.0"
 ipykernel = "^6.27.1"
 
 [build-system]
