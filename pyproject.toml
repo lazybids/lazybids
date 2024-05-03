@@ -8,7 +8,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "<3.12,>=3.8"
 pandas = "^2.0.0"
-tqdm = "^4.66.1"
+tqdm = "^4.66.3"
 rich = "^13.7.0"
 torchio = {extras = ["plot"], version = "^0.19.3"}
 pydantic = "^2.5.2"
