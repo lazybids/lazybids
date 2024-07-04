@@ -217,7 +217,7 @@ class Scan(BaseModel, extra=Extra.allow):
         if self.fields:
             del all_data["fields"]
             all_data.update(self.fields)
-        all_data.pop("parent")
+        
         return all_data
 
 
@@ -293,8 +293,6 @@ class Experiment(BaseModel, extra=Extra.allow):
         if self.fields:
             del all_data["fields"]
             all_data.update(self.fields)
-        all_data.pop("parent")
-        all_data.pop("scans")
         return all_data
 
 
@@ -380,9 +378,6 @@ class Subject(BaseModel, extra=Extra.allow):
         if self.fields:
             del all_data["fields"]
             all_data.update(self.fields)
-        all_data.pop("parent")
-        all_data.pop("scans")
-        all_data.pop("experiments")
         return all_data
 
 
@@ -445,7 +440,6 @@ class Dataset(BaseModel, extra=Extra.allow):
         if self.fields:
             del all_data["fields"]
             all_data.update(self.fields)
-        all_data.pop("subjects")
         return all_data
 
     def _subject_variables_metadata_from_json(self, json_path=None):
