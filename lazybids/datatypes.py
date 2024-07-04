@@ -8,6 +8,7 @@ import yaml
 import pandas as pd
 import SimpleITK as sitk
 import numpy as np
+import shutil
 
 from pydantic import BaseModel, computed_field, Field, Extra, ConfigDict
 from pydantic.dataclasses import dataclass
@@ -169,7 +170,18 @@ class Scan(BaseModel, extra=Extra.allow):
         self.metadata_files.append(file)
         return self
 
+    def write(self, folder):
 
+        for file in self.files + self.metadata_files:
+            new_file = os.path.join(folder, os.path.split(file)[1])
+            shutil.copy(file,new_file)
+            logging.info('copying {file} to {new_file}')
+        if self.table is not None:
+            self.table.to_csv(os.path.join(folder, self.name +'.tsv'),sep='\t', index=False)
+        if self.fields:
+            with open(os.path.join(folder,self.name + '.json'),'w') as outfile:
+                json.dump(self.fields, outfile)
+        
     @property
     def data(self) -> sitk.Image:
         if not (self._loaded):
@@ -201,7 +213,7 @@ class Scan(BaseModel, extra=Extra.allow):
 
     @property
     def all_meta_data(self) -> dict:
-        all_data = self.model_dump()
+        all_data = self.model_dump(exclude=['parent','data','numpy'])
         if self.fields:
             del all_data["fields"]
             all_data.update(self.fields)
@@ -216,6 +228,7 @@ class Experiment(BaseModel, extra=Extra.allow):
     scan_metadata: Optional[Union[dict,  None]] = {}
     fields: Optional[Union[dict,  None]] = None
     load_scans = load_scans
+    path_vars_key: Optional[List[str]] = []
 
     def from_dict(exp_dict=None, dataset_folder="", parent=None):
         if os.path.isdir(
@@ -243,6 +256,7 @@ class Experiment(BaseModel, extra=Extra.allow):
         assert os.path.isdir(exp_dir), "Folder does not exist"
         pt_dict = {"participant_id": os.path.split(exp_dir)[1], "folder": exp_dir}
         path_vars_dict = utils.get_vars_from_path(exp_dir)
+        
         for path_key, path_value in path_vars_dict.items():
             if path_key in pt_dict.keys():
                 if not (path_value == pt_dict[path_key]):
@@ -256,7 +270,9 @@ class Experiment(BaseModel, extra=Extra.allow):
         experiment = Experiment(**pt_dict)
         if parent:
             experiment.parent = parent
+        experiment.path_vars_keys = path_vars_dict.keys()
         experiment.load_scans()
+
         return experiment
 
     def load_scans_in_memory(self):
@@ -273,7 +289,7 @@ class Experiment(BaseModel, extra=Extra.allow):
 
     @property
     def all_meta_data(self):
-        all_data = self.model_dump()
+        all_data = self.model_dump(exclude=['parent','scans'])
         if self.fields:
             del all_data["fields"]
             all_data.update(self.fields)
@@ -290,6 +306,7 @@ class Subject(BaseModel, extra=Extra.allow):
     scans: Optional[Union[dict,  None]] = Field({}, repr=False)
     scan_metadata: Optional[Union[dict,  None]] = {}
     fields: Optional[Union[dict,  None]] = None
+    path_vars_keys: Optional[List[str]] = []
     load_scans = load_scans
 
     def from_dict(pt_dict=None, dataset_folder="", parent=None):
@@ -309,6 +326,7 @@ class Subject(BaseModel, extra=Extra.allow):
         assert os.path.isdir(pt_dir), "Folder does not exist"
         pt_dict = {"participant_id": os.path.split(pt_dir)[1], "folder": pt_dir}
         path_vars_dict = utils.get_vars_from_path(pt_dir)
+        
         for path_key, path_value in path_vars_dict.items():
             if path_key in pt_dict.keys():
                 if not (path_value == pt_dict[path_key]):
@@ -322,6 +340,7 @@ class Subject(BaseModel, extra=Extra.allow):
         subject = Subject(**pt_dict)
         if parent:
             subject.parent = parent
+        subject.path_vars_keys = path_vars_dict.keys()
         subject.load_experiments()
         subject.load_scans()
         return subject
@@ -357,7 +376,7 @@ class Subject(BaseModel, extra=Extra.allow):
 
     @property
     def all_meta_data(self):
-        all_data = self.model_dump()
+        all_data = self.model_dump(exclude=['parent','scans', 'experiments'])
         if self.fields:
             del all_data["fields"]
             all_data.update(self.fields)
@@ -422,7 +441,7 @@ class Dataset(BaseModel, extra=Extra.allow):
 
     @property
     def all_meta_data(self):
-        all_data = self.model_dump()
+        all_data = self.model_dump(exclude=['subjects'])
         if self.fields:
             del all_data["fields"]
             all_data.update(self.fields)
