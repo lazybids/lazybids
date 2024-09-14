@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "lazybids"
-version = "0.0.5"
+version = "0.0.6"
 description = "lazybids is a python package that helps interact with existing bids datasets and convert existing dicom or nifti datasets to BIDS."
 authors = ["Roelant <roelanteijgelaar@hotmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "<3.12,>=3.8"
+python = "<3.13,>=3.8"
 pandas = "^2.0.0"
 tqdm = "^4.66.1"
 rich = "^13.7.0"
