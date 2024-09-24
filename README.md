@@ -15,7 +15,7 @@ pip install -i https://test.pypi.org/simple/ lazybids
 Example:
 [![Google Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roelant001/lazybids/blob/master/examples/bids_starter_kit_load.ipynb)
 
-Please note that subjects and experiments act as lists, whereas scans are dictionaries. This behaviour should probably be harmonized in a future release.
+Please note that subjects, experiments and scans act as dictionaries with resp. the participant_id, session_id and scan name as key.
 
 ## Notable features:
 - Access all metadata of a Dataset, Subject, Experiment or Scan using the all_metadata property. This combines variables from filenames, .json (sidecars) and nifti/dicom metadata.
@@ -56,7 +56,7 @@ print(ds)
 ```
 
 ```python
-for subject in ds.subjects:
+for subject in ds.subjects.values():
     print(subject)
 
 # Subject(
@@ -85,7 +85,7 @@ for subject in ds.subjects:
 ```
 
 ```python
-for exp in subject.experiments:
+for exp in subject.experiments.values():
     print(exp)
 # Experiment(
 #     folder=WindowsPath('E:/git/lazyBIDS/examples/bids-starter-kit-template/templates/sub-epilepsy01/ses-01'),

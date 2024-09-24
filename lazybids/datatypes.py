@@ -1,5 +1,5 @@
 from pkg_resources import resource_filename
-from typing import Union, List, Optional, Any
+from typing import Union, List, Dict, Optional, Any
 from pathlib import Path
 import json
 import os
@@ -224,7 +224,7 @@ class Scan(BaseModel, extra=Extra.allow):
 class Experiment(BaseModel, extra=Extra.allow):
     folder: Path
     parent: Any = Field(None, repr=False)
-    scans: Optional[Union[dict,  None]] = {}
+    scans: Optional[Dict[str, Scan]] = Field(default_factory=dict, repr=False)
     scan_metadata: Optional[Union[dict,  None]] = {}
     fields: Optional[Union[dict,  None]] = None
     load_scans = load_scans
@@ -300,8 +300,8 @@ class Subject(BaseModel, extra=Extra.allow):
     participant_id: Optional[Union[str,  None]]
     parent: Any = Field(None, repr=False)
     folder: Optional[Union[Path,  None]] = None
-    experiments: Optional[List[Experiment]] = Field([], repr=False)
-    scans: Optional[Union[dict,  None]] = Field({}, repr=False)
+    experiments: Optional[Dict[str, Experiment]] = Field(default_factory=dict, repr=False)
+    scans: Optional[Dict[str, Scan]] = Field(default_factory=dict, repr=False)
     scan_metadata: Optional[Union[dict,  None]] = {}
     fields: Optional[Union[dict,  None]] = None
     path_vars_keys: Optional[List[str]] = []
@@ -346,23 +346,21 @@ class Subject(BaseModel, extra=Extra.allow):
     def load_experiments(self):
         assert self.folder, "Subject folder needs to be set to load experiments"
         logging.info(f'Loading experiments for participant {self.participant_id}')
-        for exp in tqdm(glob.glob(os.path.join(self.folder, "./ses-*"))):
-            if os.path.isdir(exp):
-                self.experiments.append(Experiment.from_folder(exp))
+        for exp_folder in tqdm(glob.glob(os.path.join(self.folder, "./ses-*"))):
+            if os.path.isdir(exp_folder):
+                exp = Experiment.from_folder(exp_folder)
+                self.experiments[exp.experiment_id] = exp
 
     def load_scans_in_memory(self):
         for scan in self.scans.values():
             scan.load()
-        for exp in self.experiments:
+        for exp in self.experiments.values():
             exp.load_scans_in_memory()
 
     @computed_field
     @property
     def n_experiments(self) -> int:
-        if not (self.experiments):
-            return 0
-        else:
-            return len(self.experiments)
+        return len(self.experiments)
 
     @computed_field
     @property
@@ -402,7 +400,7 @@ class Dataset(BaseModel, extra=Extra.allow):
     license: str = ""
     dataset_doi: str = ""
 
-    subjects: List[Subject] = Field([], repr=False)
+    subjects: Dict[str, Subject] = Field(default_factory=dict, repr=False)
     subject_variables_metadata: Union[List[dict], None] = None
 
 
@@ -430,7 +428,7 @@ class Dataset(BaseModel, extra=Extra.allow):
         return dataset
 
     def load_scans_in_memory(self):
-        for subject in self.subjects:
+        for subject in self.subjects.values():
             subject.load_scans_in_memory()
 
 
@@ -460,7 +458,8 @@ class Dataset(BaseModel, extra=Extra.allow):
         if not (os.path.isfile(os.path.join(self.folder, "./participants.tsv"))):
             logging.info(f'No participants.tsv found, loading subjects based on subdirectories')
             for pt_dir in tqdm(glob.glob(os.path.join(self.folder, "./sub-*"))):
-                self.subjects.append(Subject.from_folder(pt_dir=pt_dir, parent=self))
+                subject = Subject.from_folder(pt_dir=pt_dir, parent=self)
+                self.subjects[subject.participant_id] = subject
         else:
             logging.info(f'Loading all subjects from {os.path.join(self.folder, "./participants.tsv")}')
             df = pd.read_csv(os.path.join(self.folder, "./participants.tsv"), sep="\t")
@@ -477,10 +476,9 @@ class Dataset(BaseModel, extra=Extra.allow):
                         f"Missing subject folder for {participant_id}, continuing using only subject variables from {os.path.join(self.folder, './participants.tsv')} for this patient"
                     )
                 else:
-                    self.subjects.append(
-                        Subject.from_dict(
-                            pt_dict=pt.to_dict(),
-                            dataset_folder=self.folder,
-                            parent=self,
-                        )
+                    subject = Subject.from_dict(
+                        pt_dict=pt.to_dict(),
+                        dataset_folder=self.folder,
+                        parent=self,
                     )
+                    self.subjects[participant_id] = subject
