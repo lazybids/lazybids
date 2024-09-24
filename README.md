@@ -1,15 +1,10 @@
 # LazyBIDS
 
-# This is a very early proof of concept, expect things to fail/break or change!!!
 Python package to (lazily) interact with BIDS datasets.
 
 Install the latest version:
 ```bash
-pip install git+https://github.com/roelant001/lazybids.git
-```
-Or install a tagged release from [test pypi](https://test.pypi.org/project/lazybids/#files]):
-```bash
-pip install -i https://test.pypi.org/simple/ lazybids
+pip install lazybids
 ```
 
 Example:
@@ -21,10 +16,17 @@ Please note that subjects, experiments and scans act as dictionaries with resp. 
 - Access all metadata of a Dataset, Subject, Experiment or Scan using the all_metadata property. This combines variables from filenames, .json (sidecars) and nifti/dicom metadata.
 - Access contents of scan/measurment level .tsv files using pandas from the Scan.table parameter
 - All imaging formats supported by SimpleITK, including .nii, .nii.gz and DICOM-folders should work (*DICOM support not tested). As well as .tsv and .json sidecar/metadata formats.
+MEG/Eeg support is limited at this time.
 - You can control if scan's pixel/voxel data is cached in memory using the 'load_scans_in_memory' parameter on creation or using load_scans() function of a Dataset,Subject,or Experiments, or the Scan.load() and Scan.unload() functions.
 - Scan meta-data is always loaded
 - Access scan pixel/voxel data using SimpleITK images from the Scan.data property, or as numpy array using Scan.numpy
 
+## Roadmap
+- Implement writing datasets to disk
+- Improve capabilities of changing/updating existing datasets
+- Add MEG/EEG support (e.g. MNE-python)
+
+## Example usage
 ```python
 import lazybids
 dataset_dir = './templates/'
