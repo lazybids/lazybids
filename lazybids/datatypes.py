@@ -221,7 +221,7 @@ class Scan(BaseModel, extra=Extra.allow):
         return all_data
 
 
-class Experiment(BaseModel, extra=Extra.allow):
+class Session(BaseModel, extra=Extra.allow):
     folder: Path
     parent: Any = Field(None, repr=False)
     scans: Optional[Dict[str, Scan]] = Field(default_factory=dict, repr=False)
@@ -236,21 +236,21 @@ class Experiment(BaseModel, extra=Extra.allow):
                 dataset_folder,
                 "./",
                 exp_dict["participant_id"],
-                "./" + exp_dict["experiment_id"],
+                "./" + exp_dict["session_id"],
             )
         ):
             exp_dict["folder"] = os.path.join(
                 dataset_folder,
                 "./",
                 exp_dict["participant_id"],
-                "./" + exp_dict["experiment_id"],
+                "./" + exp_dict["session_id"],
             )
-        exp = Experiment(**exp_dict)
+        ses = Session(**exp_dict)
         if parent:
-            exp.parent = parent
+            ses.parent = parent
         if exp_dict["folder"]:
-            exp.load_scans()
-        return exp
+            ses.load_scans()
+        return ses
 
     def from_folder(exp_dir="", parent=None):
         assert os.path.isdir(exp_dir), "Folder does not exist"
@@ -267,13 +267,13 @@ class Experiment(BaseModel, extra=Extra.allow):
                     pt_dict["folder_" + path_key] = path_value
             else:
                 pt_dict[path_key] = path_value
-        experiment = Experiment(**pt_dict)
+        session = Session(**pt_dict)
         if parent:
-            experiment.parent = parent
-        experiment.path_vars_keys = path_vars_dict.keys()
-        experiment.load_scans()
+            session.parent = parent
+        session.path_vars_keys = path_vars_dict.keys()
+        session.load_scans()
 
-        return experiment
+        return session
 
     def load_scans_in_memory(self):
         for scan in self.scans.values():
@@ -300,7 +300,7 @@ class Subject(BaseModel, extra=Extra.allow):
     participant_id: Optional[Union[str,  None]]
     parent: Any = Field(None, repr=False)
     folder: Optional[Union[Path,  None]] = None
-    experiments: Optional[Dict[str, Experiment]] = Field(default_factory=dict, repr=False)
+    sessions: Optional[Dict[str, Session]] = Field(default_factory=dict, repr=False)
     scans: Optional[Dict[str, Scan]] = Field(default_factory=dict, repr=False)
     scan_metadata: Optional[Union[dict,  None]] = {}
     fields: Optional[Union[dict,  None]] = None
@@ -316,7 +316,7 @@ class Subject(BaseModel, extra=Extra.allow):
         if parent:
             subject.parent = parent
         if pt_dict["folder"]:
-            subject.load_experiments()
+            subject.load_sessions()
         subject.load_scans()
         return subject
 
@@ -339,28 +339,28 @@ class Subject(BaseModel, extra=Extra.allow):
         if parent:
             subject.parent = parent
         subject.path_vars_keys = path_vars_dict.keys()
-        subject.load_experiments()
+        subject.load_sessions()
         subject.load_scans()
         return subject
 
-    def load_experiments(self):
-        assert self.folder, "Subject folder needs to be set to load experiments"
-        logging.info(f'Loading experiments for participant {self.participant_id}')
+    def load_sessions(self):
+        assert self.folder, "Subject folder needs to be set to load sessions"
+        logging.info(f'Loading sessions for participant {self.participant_id}')
         for exp_folder in tqdm(glob.glob(os.path.join(self.folder, "./ses-*"))):
             if os.path.isdir(exp_folder):
-                exp = Experiment.from_folder(exp_folder)
-                self.experiments[exp.experiment_id] = exp
+                ses = Session.from_folder(exp_folder)
+                self.sessions[ses.session_id] = ses
 
     def load_scans_in_memory(self):
         for scan in self.scans.values():
             scan.load()
-        for exp in self.experiments.values():
-            exp.load_scans_in_memory()
+        for ses in self.sessions.values():
+            ses.load_scans_in_memory()
 
     @computed_field
     @property
-    def n_experiments(self) -> int:
-        return len(self.experiments)
+    def n_sessions(self) -> int:
+        return len(self.sessions)
 
     @computed_field
     @property
@@ -372,7 +372,7 @@ class Subject(BaseModel, extra=Extra.allow):
 
     @property
     def all_meta_data(self):
-        all_data = self.model_dump(exclude=['parent','scans', 'experiments'])
+        all_data = self.model_dump(exclude=['parent','scans', 'sessions'])
         if self.fields:
             del all_data["fields"]
             all_data.update(self.fields)

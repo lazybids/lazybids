@@ -10,14 +10,14 @@ pip install lazybids
 Example:
 [![Google Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roelant001/lazybids/blob/master/examples/bids_starter_kit_load.ipynb)
 
-Please note that subjects, experiments and scans act as dictionaries with resp. the participant_id, session_id and scan name as key.
+Please note that subjects, sessions and scans act as dictionaries with resp. the participant_id, session_id and scan name as key.
 
 ## Notable features:
-- Access all metadata of a Dataset, Subject, Experiment or Scan using the all_metadata property. This combines variables from filenames, .json (sidecars) and nifti/dicom metadata.
+- Access all metadata of a Dataset, Subject, Session or Scan using the all_metadata property. This combines variables from filenames, .json (sidecars) and nifti/dicom metadata.
 - Access contents of scan/measurment level .tsv files using pandas from the Scan.table parameter
 - All imaging formats supported by SimpleITK, including .nii, .nii.gz and DICOM-folders should work (*DICOM support not tested). As well as .tsv and .json sidecar/metadata formats.
 MEG/Eeg support is limited at this time.
-- You can control if scan's pixel/voxel data is cached in memory using the 'load_scans_in_memory' parameter on creation or using load_scans() function of a Dataset,Subject,or Experiments, or the Scan.load() and Scan.unload() functions.
+- You can control if scan's pixel/voxel data is cached in memory using the 'load_scans_in_memory' parameter on creation or using load_scans() function of a Dataset,Subject,or Sessions, or the Scan.load() and Scan.unload() functions.
 - Scan meta-data is always loaded
 - Access scan pixel/voxel data using SimpleITK images from the Scan.data property, or as numpy array using Scan.numpy
 
@@ -69,7 +69,7 @@ for subject in ds.subjects.values():
 #     age=0,
 #     sex='m',
 #     handedness='l',
-#     n_experiments=1,
+#     n_sessions=1,
 #     n_scans=0
 # )
 # Subject(
@@ -80,16 +80,16 @@ for subject in ds.subjects.values():
 #     age=10,
 #     sex='f',
 #     handedness='r',
-#     n_experiments=1,
+#     n_sessions=1,
 #     n_scans=0
 # )
 
 ```
 
 ```python
-for exp in subject.experiments.values():
-    print(exp)
-# Experiment(
+for ses in subject.sessions.values():
+    print(ses)
+# Session(
 #     folder=WindowsPath('E:/git/lazyBIDS/examples/bids-starter-kit-template/templates/sub-epilepsy01/ses-01'),
 #     scans={
 #         'sub-epilepsy01_ses-01_electrodes': Scan(
@@ -144,7 +144,7 @@ for exp in subject.experiments.values():
 #     n_scans=1
 # )
 
-for scan in exp.scans.values():
+for scan in ses.scans.values():
     print(scan)
 
 # Scan(
