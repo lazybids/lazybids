@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lazybids"
-version = "0.0.8"
+version = "0.1.0"
 description = "lazybids is a python package that helps interact with existing bids datasets and convert existing dicom or nifti datasets to BIDS."
 authors = ["Roelant <roelanteijgelaar@hotmail.com>"]
 readme = "README.md"
