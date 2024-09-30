@@ -97,17 +97,17 @@ def load_scans(self):
                 basename, ext = utils.get_basename_extension(file)
                 if ext == ".json":
                     if not (basename in self.scans.keys()):
-                        self.scans[basename] = Scan().from_json(file, parent=self)
+                        self.scans[basename] = Scan().from_json(file)
                     else:
                         self.scans[basename].from_json(file)
                 elif ext == ".tsv":
                     if not (basename in self.scans.keys()):
-                        self.scans[basename] = Scan().from_tsv(file, parent=self)
+                        self.scans[basename] = Scan().from_tsv(file)
                     else:
                         self.scans[basename].from_tsv(file)
                 elif ext.lower() in itk_supported_datatypes:
                     if not (basename in self.scans.keys()):
-                        self.scans[basename] = Scan().from_file(file, parent=self)
+                        self.scans[basename] = Scan().from_file(file)
                     else:
                         self.scans[basename].from_file(file)
                 if basename in self.scans.keys():
@@ -120,18 +120,15 @@ def load_scans(self):
 class Scan(BaseModel, extra=Extra.allow):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     name: str = ""
-    parent: Any = Field(None, repr=False)
     # filetype: str = None
     files: List[Path] = []
     metadata_files: List[Path] = []
-    fields: Optional[Union[dict,  None]] = {}
+    fields: Optional[Union[Dict,  None]] = {}
     table: Optional[Union[pd.DataFrame,  None]] = None
     _loaded: bool = False
     _cached_image: Optional[Union[sitk.Image,  None]] = None
 
-    def from_file(self, file: Path, parent=None):
-        if parent:
-            self.parent = parent
+    def from_file(self, file: Path):
         if type(file) == list:
             self.files = file
         else:
@@ -148,9 +145,7 @@ class Scan(BaseModel, extra=Extra.allow):
 
         return self
     
-    def from_json(self, file: Path, parent=None):
-        if parent:
-            self.parent = parent
+    def from_json(self, file: Path):
         if not(self.name):
             self.name = utils.get_basename_extension(file)[0]
         for k,v in json.load(open(file, "r")).items():
@@ -161,9 +156,7 @@ class Scan(BaseModel, extra=Extra.allow):
         self.metadata_files.append(file)
         return self
 
-    def from_tsv(self, file: Path, parent=None):
-        if parent:
-            self.parent = parent
+    def from_tsv(self, file: Path):
         if not(self.name):
             self.name = utils.get_basename_extension(file)[0]
         self.table = pd.read_csv(file, sep="\t")
@@ -213,7 +206,7 @@ class Scan(BaseModel, extra=Extra.allow):
 
     @property
     def all_meta_data(self) -> dict:
-        all_data = self.model_dump(exclude=['parent','data','numpy'])
+        all_data = self.model_dump(exclude=['data','numpy'])
         if self.fields:
             del all_data["fields"]
             all_data.update(self.fields)
@@ -222,15 +215,14 @@ class Scan(BaseModel, extra=Extra.allow):
 
 
 class Session(BaseModel, extra=Extra.allow):
-    folder: Path
-    parent: Any = Field(None, repr=False)
+    folder: Optional[Union[Path,  None]] = None
     scans: Optional[Dict[str, Scan]] = Field(default_factory=dict, repr=False)
-    scan_metadata: Optional[Union[dict,  None]] = {}
-    fields: Optional[Union[dict,  None]] = None
+    scan_metadata: Optional[Union[Dict[Any, Any],  None]] = Field(default_factory=dict, repr=False)
+    fields: Optional[Union[Dict[Any, Any],  None]] = None
     load_scans = load_scans
-    path_vars_key: Optional[List[str]] = []
+    path_vars_keys: Optional[List[str]] = Field(default_factory=list)
 
-    def from_dict(exp_dict=None, dataset_folder="", parent=None):
+    def from_dict(exp_dict=None, dataset_folder=""):
         if os.path.isdir(
             os.path.join(
                 dataset_folder,
@@ -246,13 +238,11 @@ class Session(BaseModel, extra=Extra.allow):
                 "./" + exp_dict["session_id"],
             )
         ses = Session(**exp_dict)
-        if parent:
-            ses.parent = parent
         if exp_dict["folder"]:
             ses.load_scans()
         return ses
 
-    def from_folder(exp_dir="", parent=None):
+    def from_folder(exp_dir=""):
         assert os.path.isdir(exp_dir), "Folder does not exist"
         pt_dict = {"participant_id": os.path.split(exp_dir)[1], "folder": exp_dir}
         path_vars_dict = utils.get_vars_from_path(exp_dir)
@@ -268,11 +258,8 @@ class Session(BaseModel, extra=Extra.allow):
             else:
                 pt_dict[path_key] = path_value
         session = Session(**pt_dict)
-        if parent:
-            session.parent = parent
-        session.path_vars_keys = path_vars_dict.keys()
+        session.path_vars_keys = list(path_vars_dict.keys())
         session.load_scans()
-
         return session
 
     def load_scans_in_memory(self):
@@ -289,7 +276,7 @@ class Session(BaseModel, extra=Extra.allow):
 
     @property
     def all_meta_data(self):
-        all_data = self.model_dump(exclude=['parent','scans'])
+        all_data = self.model_dump(exclude=['scans'])
         if self.fields:
             del all_data["fields"]
             all_data.update(self.fields)
@@ -298,29 +285,26 @@ class Session(BaseModel, extra=Extra.allow):
 
 class Subject(BaseModel, extra=Extra.allow):
     participant_id: Optional[Union[str,  None]]
-    parent: Any = Field(None, repr=False)
     folder: Optional[Union[Path,  None]] = None
     sessions: Optional[Dict[str, Session]] = Field(default_factory=dict, repr=False)
     scans: Optional[Dict[str, Scan]] = Field(default_factory=dict, repr=False)
-    scan_metadata: Optional[Union[dict,  None]] = {}
-    fields: Optional[Union[dict,  None]] = None
-    path_vars_keys: Optional[List[str]] = []
+    scan_metadata: Optional[Union[Dict[Any, Any],  None]] = Field(default_factory=dict, repr=False)
+    fields: Optional[Union[Dict[Any, Any],  None]] = None
+    path_vars_keys: Optional[List[str]] = Field(default_factory=list)
     load_scans = load_scans
 
-    def from_dict(pt_dict=None, dataset_folder="", parent=None):
+    def from_dict(pt_dict=None, dataset_folder=""):
         if os.path.isdir(os.path.join(dataset_folder, "./", pt_dict["participant_id"])):
             pt_dict["folder"] = os.path.join(
                 dataset_folder, "./", pt_dict["participant_id"]
             )
         subject = Subject(**pt_dict)
-        if parent:
-            subject.parent = parent
         if pt_dict["folder"]:
             subject.load_sessions()
         subject.load_scans()
         return subject
 
-    def from_folder(pt_dir="", parent=None):
+    def from_folder(pt_dir=""):
         assert os.path.isdir(pt_dir), "Folder does not exist"
         pt_dict = {"participant_id": os.path.split(pt_dir)[1], "folder": pt_dir}
         path_vars_dict = utils.get_vars_from_path(pt_dir)
@@ -336,9 +320,7 @@ class Subject(BaseModel, extra=Extra.allow):
             else:
                 pt_dict[path_key] = path_value
         subject = Subject(**pt_dict)
-        if parent:
-            subject.parent = parent
-        subject.path_vars_keys = path_vars_dict.keys()
+        subject.path_vars_keys = list(path_vars_dict.keys())
         subject.load_sessions()
         subject.load_scans()
         return subject
@@ -372,7 +354,7 @@ class Subject(BaseModel, extra=Extra.allow):
 
     @property
     def all_meta_data(self):
-        all_data = self.model_dump(exclude=['parent','scans', 'sessions'])
+        all_data = self.model_dump(exclude=['scans', 'sessions'])
         if self.fields:
             del all_data["fields"]
             all_data.update(self.fields)
@@ -396,12 +378,12 @@ class Dataset(BaseModel, extra=Extra.allow):
     funding: Union[List[str], None] = None
     ethics_approvals: Union[List[str], None] = None
     references_and_links: Union[List[str], None] = None
-    source_datasets: Union[List[str], List[dict], None] = None
+    source_datasets: Union[List[str], List[Dict], None] = None
     license: str = ""
     dataset_doi: str = ""
 
     subjects: Dict[str, Subject] = Field(default_factory=dict, repr=False)
-    subject_variables_metadata: Union[List[dict], None] = None
+    subject_variables_metadata: Union[List[Dict[Any, Any]], None] = None
 
 
     def from_folder(folder_path, load_scans_in_memory=False):
@@ -458,7 +440,7 @@ class Dataset(BaseModel, extra=Extra.allow):
         if not (os.path.isfile(os.path.join(self.folder, "./participants.tsv"))):
             logging.info(f'No participants.tsv found, loading subjects based on subdirectories')
             for pt_dir in tqdm(glob.glob(os.path.join(self.folder, "./sub-*"))):
-                subject = Subject.from_folder(pt_dir=pt_dir, parent=self)
+                subject = Subject.from_folder(pt_dir=pt_dir)
                 self.subjects[subject.participant_id] = subject
         else:
             logging.info(f'Loading all subjects from {os.path.join(self.folder, "./participants.tsv")}')
@@ -478,7 +460,6 @@ class Dataset(BaseModel, extra=Extra.allow):
                 else:
                     subject = Subject.from_dict(
                         pt_dict=pt.to_dict(),
-                        dataset_folder=self.folder,
-                        parent=self,
+                        dataset_folder=self.folder
                     )
                     self.subjects[participant_id] = subject
