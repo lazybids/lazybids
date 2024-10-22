@@ -1,14 +1,24 @@
 # LazyBIDS
 
-Python package to (lazily) interact with BIDS datasets.
+Python package to (lazily) interact with BIDS datasets. Lazybids enables interaction with bids-datasets as python objects, similar to how [xnatpy](https://xnat.readthedocs.io/en/latest/static/tutorial.html) interacts with XNAT datasets, both locally and on a [lazybids-ui](https://github.com/lazybids/lazybids-ui) server.
+
+Lazybids serves both as an io-library to interact with local bids datasets, as well as a client allowing you to interact with datasets with datasets stored on the [lazybids-ui](https://github.com/lazybids/lazybids-ui) server verry similar to how you would with a local dataset, without having to download the entire dataset. (See [Server-Client example](#server-client-example)) ([lazybids-ui](https://github.com/lazybids/lazybids-ui), in turn uses lazybids as it's core io-library.)
 
 Install the latest version:
 ```bash
 pip install lazybids
 ```
 
-Example:
+## Documentation
+
+For detailed documentation, please visit our [GitHub Pages](https://lazybids.github.io/lazybids/).
+
+
+### Example:
 [![Google Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roelant001/lazybids/blob/master/examples/bids_starter_kit_load.ipynb)
+
+### Server-Client example:
+[![Google Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roelant001/lazybids/blob/master/examples/api_test.ipynb)
 
 Please note that subjects, sessions and scans act as dictionaries with resp. the participant_id, session_id and scan name as key.
 
@@ -20,6 +30,7 @@ MEG/Eeg support is limited at this time.
 - You can control if scan's pixel/voxel data is cached in memory using the 'load_scans_in_memory' parameter on creation or using load_scans() function of a Dataset,Subject,or Sessions, or the Scan.load() and Scan.unload() functions.
 - Scan meta-data is always loaded
 - Access scan pixel/voxel data using SimpleITK images from the Scan.data property, or as numpy array using Scan.numpy
+- Work with huge, online, datasets on a lazybids-ui server as if it was a local dataset, downloading only the parts you need.
 
 ## Roadmap
 - Implement writing datasets to disk
@@ -29,8 +40,15 @@ MEG/Eeg support is limited at this time.
 ## Example usage
 ```python
 import lazybids
-dataset_dir = './templates/'
-ds = lazybids.Dataset.from_folder(dataset_dir, load_scans_in_memory=False)
+local = True
+if local:
+    dataset_dir = './templates/'
+    ds = lazybids.Dataset.from_folder(dataset_dir, load_scans_in_memory=False)
+# OR Get the dataset from the API
+else:
+    connection = lazybids.Connection("http://localhost:8000")
+    ds = lazybids.connection.get_dataset('ds005360')
+# 
 print(ds)
 # Output:
 # Dataset(
