@@ -15,10 +15,10 @@ For detailed documentation, please visit our [GitHub Pages](https://lazybids.git
 
 
 ### Example:
-[![Google Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roelant001/lazybids/blob/master/examples/bids_starter_kit_load.ipynb)
+[![Google Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lazybids/lazybids/blob/master/examples/bids_starter_kit_load.ipynb)
 
 ### Server-Client example:
-[![Google Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roelant001/lazybids/blob/master/examples/api_test.ipynb)
+[![Google Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lazybids/lazybids/blob/master/examples/api_test.ipynb)
 
 Please note that subjects, sessions and scans act as dictionaries with resp. the participant_id, session_id and scan name as key.
 
