@@ -25,8 +25,17 @@ class Connection(BaseModel):
     def list_datasets(self) -> List[Dict]:
         return self.get("/api/datasets")
 
-    def get_dataset(self, ds_id: int) -> Dataset:
-        return Dataset.from_api(self, ds_id)
+    def get_dataset(self, ds_id: Optional[int] = None, ds_name: Optional[str] = None) -> Dataset:
+        if ds_id:
+            return Dataset.from_api(self, ds_id)
+        elif ds_name:
+            datasets = self.list_datasets()
+            ds_id = next((ds['id'] for ds in datasets if ds['name'] == ds_name), None)
+            if ds_id is None:
+                raise ValueError(f"Dataset with name {ds_name} not found")
+            return Dataset.from_api(self, ds_id)
+        else:
+            raise ValueError("Either ds_id or ds_name must be provided")
 
     def get_subject(self, ds_id: int, sub_id: str) -> Subject:
         return Subject.from_api(self, ds_id, sub_id)

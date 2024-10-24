@@ -144,6 +144,8 @@ class Scan(BaseModel, extra=Extra.allow):
         table (Optional[pd.DataFrame]): Tabular data associated with the scan, if any.
         participant_id (Optional[str]): ID of the participant this scan belongs to.
         session_id (Optional[str]): ID of the session this scan belongs to.
+        data (Optional[sitk.Image]): The image data loaded into memory.
+        numpy (Optional[np.ndarray]): The image data loaded into memory as a numpy array.
 
     Methods:
         from_file: Load scan data from a file.
@@ -156,19 +158,37 @@ class Scan(BaseModel, extra=Extra.allow):
     """
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
-        json_encoders={pd.DataFrame: lambda df: df.to_csv(sep="\t", index=False)},
+        json_encoders={pd.DataFrame: lambda df: df.to_csv(sep="\t", index=False),
+                       pd.core.frame.DataFrame: lambda df: df.to_csv(sep="\t", index=False)},
     )
     name: str = ""
     files: List[Union[Path, AnyHttpUrl]] = Field(default_factory=list)
     metadata_files: List[Union[Path, AnyHttpUrl]] = Field(default_factory=list)
     fields: Dict[str, Any] = Field(default_factory=dict)
-    table: Optional[pd.DataFrame] = None
+
+    table: Optional[Any|None] = Field(
+        
+        description="A pandas DataFrame",
+        example={"column1": [1, 2, 3], "column2": ["a", "b", "c"]},
+        default_factory=pd.DataFrame,
+    )
     _loaded: bool = False
     _cached_image: Optional[sitk.Image] = None
     participant_id: Optional[str] = None
     session_id: Optional[str] = None
     connection: Optional["Connection"] = None
 
+    @computed_field(repr=False)
+    @property    
+    def _table_tsv(self) -> Optional[str]:
+        if self.table is not None:
+            if not self.table.empty:
+                return self.table.to_csv(sep="\t", index=False)
+            else:
+                return None
+        else:
+            return None
+    
     def from_file(self, file: Union[Path, str, AnyHttpUrl]) -> "Scan":
         if isinstance(file, (Path, str)):
             self.files = [Path(file)]
@@ -300,8 +320,8 @@ class Scan(BaseModel, extra=Extra.allow):
                     f"/api/dataset/{ds_id}/subjects/{sub_id}/scans/{scan_id}"
                 )
             base_url = f"/api/dataset/{ds_id}/subject/{sub_id}/scan/{scan_id}/files/"
-        if "table" in scan_data.keys() and not (scan_data["table"] is None):
-            scan_data["table"] = pd.read_csv(StringIO(scan_data["table"]), sep="\t")
+        if "_table_tsv" in scan_data.keys() and not (scan_data["_table_tsv"] is None):
+            scan_data["table"] = pd.read_csv(StringIO(scan_data["_table_tsv"]), sep="\t")
         scan = cls(**scan_data)
         scan.connection = connection
         scan.files = [
@@ -749,6 +769,8 @@ Dataset.model_rebuild()
 Subject.model_rebuild()
 Session.model_rebuild()
 Scan.model_rebuild()
+
+
 
 
 
