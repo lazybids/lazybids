@@ -28,7 +28,6 @@ plugins:
   - mkdocstrings
 nav:
   - Documentation: index.md
-  - Installation: /#installation
   - Basic usage: basic_usage.md
   - Reference: reference.md
   - "": googlebef590d85e3e012f.html
