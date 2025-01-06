@@ -31,6 +31,7 @@ nav:
   - Installation: /#installation
   - Basic usage: basic_usage.md
   - Reference: reference.md
+  - "": googlebef590d85e3e012f.html
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
